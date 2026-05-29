@@ -5,7 +5,6 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import TerminalFeed from '@/components/TerminalFeed';
 import AlertToast from '@/components/AlertToast';
 
-// Dynamically import MapView to avoid SSR issues with Leaflet
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
   loading: () => <div className="w-full h-full flex items-center justify-center bg-[#0a0a0c] text-accent-mint animate-pulse font-mono text-sm">Initializing Geospatial Engine...</div>
@@ -18,6 +17,9 @@ export default function Dashboard() {
   const [logs, setLogs] = useState([]);
   const [packetsIngested, setPacketsIngested] = useState(0);
   const [alertEvent, setAlertEvent] = useState(null);
+
+  // Track known IDs using a ref to prevent terminal spam/re-render loops
+  const knownEventIdsRef = useRef(new Set());
   const lastAlertTime = useRef(0);
 
   useEffect(() => {
@@ -32,8 +34,6 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    let intervalId;
-
     const fetchTelemetryStream = async () => {
       try {
         const res = await fetch('/api/stream-event');
@@ -41,56 +41,60 @@ export default function Dashboard() {
 
         const data = await res.json();
 
-        // Target the plural data array returned by your updated route.js
         if (data.events && Array.isArray(data.events)) {
+          let brandNewPacketsCount = 0;
+          let newestMatch = null;
 
-          // Check if we have received a new item that isn't currently in local state
-          if (data.events.length > 0) {
-            const mostRecentIncoming = data.events[0]; // First element is newest from LPUSH
-            const isBrandNew = !eventsList.some(e => e.id === mostRecentIncoming.id && e.timestamp === mostRecentIncoming.timestamp);
+          // Iterate backward (oldest to newest) to print logs chronologically
+          for (let i = data.events.length - 1; i >= 0; i--) {
+            const ev = data.events[i];
+            // Create a unique footprint matching your Redis cache keys
+            const uniqueKey = `${ev.id}-${ev.timestamp}`;
 
-            if (isBrandNew && eventsList.length > 0) {
-              setPacketsIngested(p => p + 1);
-              addLog(`[EDGE] Stream payload synchronized. Ingested packet cluster.`);
-              addLog(`[STREAM] Unpacking telemetry ID: ${mostRecentIncoming.id} | Category: ${mostRecentIncoming.category}`);
-              addLog(`[MAP] Re-indexing target coordinates matrix...`);
-
-              // Throttle alerts: only trigger one every 6 seconds max
-              const now = Date.now();
-              if (now - lastAlertTime.current > 6000) {
-                lastAlertTime.current = now;
-                setAlertEvent({ ...mostRecentIncoming, _ts: now });
-              }
+            if (!knownEventIdsRef.current.has(uniqueKey)) {
+              knownEventIdsRef.current.add(uniqueKey);
+              brandNewPacketsCount++;
+              newestMatch = ev;
             }
           }
 
-          // Directly set the full collection of global markers
+          // Only update logs and counters if fresh packets actually landed
+          if (brandNewPacketsCount > 0 && newestMatch) {
+            setPacketsIngested(p => p + brandNewPacketsCount);
+            addLog(`[EDGE] Ingested ${brandNewPacketsCount} new binary telemetry packets.`);
+            addLog(`[STREAM] Active Event Cluster ID: ${newestMatch.id} | Cat: ${newestMatch.category}`);
+            addLog(`[MAP] Synchronizing layout coordinate vectors...`);
+
+            const now = Date.now();
+            if (now - lastAlertTime.current > 6000) {
+              lastAlertTime.current = now;
+              setAlertEvent({ ...newestMatch, _ts: now });
+            }
+          }
+
+          // Smoothly overlay the cluster arrays
           setEventsList(data.events);
         }
       } catch (error) {
-        console.error('[STREAM POLL ERROR]', error);
+        // Silent catch for polling resilience
       }
     };
 
-    // Initialize immediate fetch and begin poll loop every 2.5 seconds
     fetchTelemetryStream();
-    intervalId = setInterval(fetchTelemetryStream, 2500);
+    const intervalId = setInterval(fetchTelemetryStream, 2500);
     return () => clearInterval(intervalId);
-  }, [eventsList]);
+  }, []); // Drop eventsList dependency to kill the infinite re-polling triggers!
 
   const latestEvent = eventsList[0] || null;
 
   return (
     <main className="h-screen w-screen bg-[#0a0a0c] text-gray-200 font-sans relative overflow-hidden">
-      {/* Full-screen Map Container */}
       <div className="absolute inset-0 z-0">
         <MapView eventsList={eventsList} activeFilter={activeFilter} isFollowing={isFollowing} setIsFollowing={setIsFollowing} />
       </div>
 
-      {/* Dynamic Telemetry Notification Toast */}
       <AlertToast event={alertEvent} />
 
-      {/* Floating Control Center Sidebar */}
       <div className="absolute inset-x-0 top-0 md:inset-y-0 md:right-auto z-20 pointer-events-none p-3 md:p-5 flex flex-col md:block">
         <div className="pointer-events-auto w-full md:w-auto h-auto max-h-[50vh] md:max-h-none md:h-full">
           <DashboardSidebar
@@ -105,7 +109,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Diagnostics Terminal Stream Feed */}
       <div className="absolute bottom-3 inset-x-3 md:bottom-5 md:right-5 md:left-[420px] z-20 pointer-events-none h-24 md:h-44">
         <div className="pointer-events-auto w-full h-full shadow-[0_0_20px_rgba(0,0,0,0.8)] rounded-xl">
           <TerminalFeed logs={logs} />
