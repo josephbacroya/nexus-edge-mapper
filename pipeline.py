@@ -48,7 +48,9 @@ def fetch_events(categories="wildfires,severeStorms,volcanoes,earthquakes", days
         print(f"[ERROR] Failed to fetch from EONET: {e}")
         return []
 
-# 2. This runs your loop continuously in a background thread
+# ========================================================================
+# FUNCTION DEFINITION (Keep all loops fully indented inside here)
+# ========================================================================
 def telemetry_stream_worker():
     print("[SYS] Background telemetry worker ignited.")
     while True:
@@ -89,10 +91,14 @@ def telemetry_stream_worker():
                 
             time.sleep(random.uniform(2.0, 5.0))
 
+# ========================================================================
+# GLOBAL INVOCATION (Completely outside function blocks)
+# This intercepts Gunicorn's boot cycle on Render perfectly!
+# ========================================================================
+print("[SYS] Initializing background telemetry tracking...")
+threading.Thread(target=telemetry_stream_worker, daemon=True).start()
+
 if __name__ == "__main__":
-    # 3. Fire up the data loop asynchronously
-    threading.Thread(target=telemetry_stream_worker, daemon=True).start()
-    
-    # 4. Bind to the dynamic environment port assigned by Render
+    # This block now runs only during local development testing
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
