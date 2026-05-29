@@ -2,6 +2,8 @@
 
 A cyberpunk-inspired real-time geospatial telemetry dashboard demonstrating advanced computer engineering concepts including edge computing, binary stream processing, and low-overhead networking.
 
+created by : Joseph Bacroya - 4th Year Computer Engineering Student from University of Batangas Lipa City
+
 ## Tech Stack
 - Next.js 14+ (App Router)
 - React, Tailwind CSS

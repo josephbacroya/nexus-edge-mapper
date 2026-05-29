@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { parseBinaryPacket } from '@/lib/packetParser';
-import { setLatestEvent, getLatestEvent } from '@/lib/telemetryStore';
+import { Redis } from '@upstash/redis';
+
+// Initialize Upstash Redis using safe environment variables
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 export async function POST(request) {
   try {
@@ -10,14 +16,14 @@ export async function POST(request) {
     }
 
     const arrayBuffer = await request.arrayBuffer();
-    
-    // Parse binary telemetry
+
+    // Parse binary telemetry using your custom unpack logic
     const parsedEvent = parseBinaryPacket(arrayBuffer);
-    
-    // Store in our temporary global store (mocking a Redis stream)
-    setLatestEvent(parsedEvent);
-    
-    console.log(`[EDGE INGEST] Parsed event ${parsedEvent.id} at [${parsedEvent.lat}, ${parsedEvent.lng}]`);
+
+    // Store directly into Upstash Redis (it handles objects automatically)
+    await redis.set('latest_event', parsedEvent);
+
+    console.log(`[EDGE INGEST] Parsed and cached event ${parsedEvent.id} at [${parsedEvent.lat}, ${parsedEvent.lng}]`);
 
     return NextResponse.json({ success: true, event: parsedEvent }, { status: 200 });
 
@@ -28,10 +34,17 @@ export async function POST(request) {
 }
 
 export async function GET() {
-  const latest = getLatestEvent();
-  if (!latest) {
-    return NextResponse.json({ error: 'No telemetry data available', event: null }, { status: 200 });
+  try {
+    // Fetch the latest global packet coordinate state from the cloud cache
+    const latest = await redis.get('latest_event');
+
+    if (!latest) {
+      return NextResponse.json({ error: 'No telemetry data available', event: null }, { status: 200 });
+    }
+
+    return NextResponse.json({ event: latest }, { status: 200 });
+  } catch (error) {
+    console.error('[EDGE GET ERROR]', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  
-  return NextResponse.json({ event: latest }, { status: 200 });
 }
