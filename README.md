@@ -39,15 +39,13 @@ py pipeline.py / python pipeline.py
 - **POST `/api/stream-event`**: Receives binary payloads, executes custom unpack logic, and utilizes Redis LPUSH/LTRIM commands to maintain a stable, 50-event rolling buffer.
 - **GET `/api/stream-event`**: Fetches the current event cluster via LRANGE, providing the frontend with a synchronized state matrix.
 - **`pipeline.py`**: Queries the NASA EONET API, serializes coordinate/event data into a compact 10-byte Big-Endian binary format (!Hff), and streams the packets via HTTP POST.
-## UI/UX
-Features a "Cyber Grid Mission Control" visual aesthetic modeled after space telemetry centers and military command systems.
 
 ## UI/UX
 
-- **Features a "Cyber Grid Mission Control" visual aesthetic modeled after space telemetry centers.
+- Features a "Cyber Grid Mission Control" visual aesthetic modeled after space telemetry centers.
 
-- **Geospatial Engine: Employs memoized marker rendering (React.memo) to prevent DOM thrashing during high-frequency telemetry updates.
+- Geospatial Engine: Employs memoized marker rendering (React.memo) to prevent DOM thrashing during high-frequency telemetry updates.
 
-- **Camera Control: Implements a debounced, auto-follow system with interaction-locking, ensuring smooth flight-path transitions between new event clusters.
+- Camera Control: Implements a debounced, auto-follow system with interaction-locking, ensuring smooth flight-path transitions between new event clusters.
 
-- **Diagnostics: Integrated terminal emulator provides real-time feedback on stream ingestion and coordinate re-indexing.
+- Diagnostics: Integrated terminal emulator provides real-time feedback on stream ingestion and coordinate re-indexing.
