@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { parseBinaryPacket } from '@/lib/packetParser';
 import { Redis } from '@upstash/redis';
 
+// Initialize the Upstash Redis client using environment variables
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -16,7 +17,7 @@ export async function POST(request) {
 
     const arrayBuffer = await request.arrayBuffer();
 
-    // Parse binary telemetry using your custom unpack logic
+    // Parse binary telemetry using custom unpack logic
     const parsedEvent = parseBinaryPacket(arrayBuffer);
 
     // Enrich with a fresh server-side ingestion timestamp
