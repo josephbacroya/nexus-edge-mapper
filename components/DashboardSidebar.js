@@ -18,7 +18,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
   return (
     <aside className="w-full md:w-[380px] h-full bg-[#0a0a0c]/70 backdrop-blur-3xl border border-white/10 rounded-3xl p-4 md:p-5 flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-y-auto font-sans">
       
-      {/* Header */}
+      {/* header */}
       <div className="mb-5">
         <Link href="/" className="inline-flex items-center text-[11px] font-medium text-gray-500 hover:text-accent-white transition-colors mb-4 group tracking-widest uppercase">
           <ArrowLeft size={13} className="mr-1.5 group-hover:-translate-x-1 transition-transform" />
@@ -33,7 +33,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
         </p>
       </div>
 
-      {/* Connection Status */}
+      {/* connection status */}
       <div className="glass-panel rounded-xl p-3.5 flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2.5">
           <span className="relative flex h-2.5 w-2.5">
@@ -47,7 +47,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
         </span>
       </div>
 
-      {/* Metrics Grid — 2x2 aligned */}
+      {/* 2x2 metrics grid */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="glass-panel rounded-xl p-3.5">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Ingested</p>
@@ -73,7 +73,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
         </div>
       </div>
 
-      {/* Compression Efficiency */}
+      {/* compression stats */}
       <div className="glass-panel rounded-xl p-4 mb-4">
         <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
           <Database size={12} className="mr-1.5 text-accent-retro" /> Compression Efficiency
@@ -96,7 +96,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
         </div>
       </div>
 
-      {/* Data Feed Filters */}
+      {/* filters */}
       <div className="glass-panel rounded-xl p-4 mb-4">
         <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">Event Filters</h3>
         <div className="grid grid-cols-2 gap-2">
@@ -116,7 +116,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
           ))}
         </div>
         
-        {/* Auto-Follow Toggle */}
+        {/* auto-follow toggle */}
         <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Crosshair size={14} className={isFollowing ? "text-accent-mint animate-pulse" : "text-gray-500"} />
@@ -131,7 +131,7 @@ export default function DashboardSidebar({ latestEvent, eventsList, packetsInges
         </div>
       </div>
 
-      {/* Export + Footer — pinned to bottom */}
+      {/* export button & footer */}
       <div className="mt-auto space-y-3">
         <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-accent-white transition-all flex items-center justify-center space-x-2 hover:shadow-[0_0_15px_rgba(246,246,246,0.15)]">
           <Download size={14} />

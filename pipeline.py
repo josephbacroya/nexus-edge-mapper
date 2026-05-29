@@ -7,7 +7,7 @@ import threading
 import os
 from flask import Flask
 
-# 1. Initialize a tiny Flask server to satisfy cloud health checks
+# setup tiny flask server for health checks
 app = Flask(__name__)
 
 EONET_API_BASE = "https://eonet.gsfc.nasa.gov/api/v3/events"
@@ -48,9 +48,7 @@ def fetch_events(categories="wildfires,severeStorms,volcanoes,earthquakes", days
         print(f"[ERROR] Failed to fetch from EONET: {e}")
         return []
 
-# ========================================================================
-# FUNCTION DEFINITION (Keep all loops fully indented inside here)
-# ========================================================================
+# background telemetry worker
 def telemetry_stream_worker():
     print("[SYS] Background telemetry worker ignited.")
     while True:
@@ -91,14 +89,11 @@ def telemetry_stream_worker():
                 
             time.sleep(random.uniform(2.0, 5.0))
 
-# ========================================================================
-# GLOBAL INVOCATION (Completely outside function blocks)
-# This intercepts Gunicorn's boot cycle on Render perfectly!
-# ========================================================================
+# start worker in background (works well with gunicorn on render)
 print("[SYS] Initializing background telemetry tracking...")
 threading.Thread(target=telemetry_stream_worker, daemon=True).start()
 
 if __name__ == "__main__":
-    # This block now runs only during local development testing
+    # for local dev testing
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

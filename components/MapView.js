@@ -4,15 +4,15 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap, Marker } from 're
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Component to handle map camera movements smoothly without zooming in/out lag
+// handles smooth map flying
 function MapController({ center, isFollowing }) {
   const map = useMap();
   useEffect(() => {
     if (!isFollowing) {
-      // Do nothing! Let the user freely explore the map manually.
+      // let user explore manually
       return;
     } else if (center && center[0] !== 0 && center[1] !== 0) {
-      // Smooth animated flight to the new event
+      // fly to new event
       map.flyTo(center, 5, {
         animate: true,
         duration: 1.5,
@@ -23,7 +23,7 @@ function MapController({ center, isFollowing }) {
   return null;
 }
 
-// Component to grab the map instance so we can control it via clicks
+// grabs map instance for click controls
 function MapEventCapture({ setMapInstance }) {
   const map = useMap();
   useEffect(() => {
@@ -32,7 +32,7 @@ function MapEventCapture({ setMapInstance }) {
   return null;
 }
 
-// Component to fetch and display City/Country from coordinates
+// reverse geocode coords to city/country
 function ReverseGeocode({ lat, lng }) {
   const [location, setLocation] = useState('Locating...');
 
@@ -58,7 +58,7 @@ function ReverseGeocode({ lat, lng }) {
   return <span>{location}</span>;
 }
 
-// Component to handle auto-opening the popup for the selected marker
+// auto-open popup for selected marker
 function SelectedMarker({ event, color, createPulseIcon, handleMarkerClick }) {
   const markerRef = React.useRef(null);
   useEffect(() => {
@@ -68,18 +68,18 @@ function SelectedMarker({ event, color, createPulseIcon, handleMarkerClick }) {
   }, []);
 
   return (
-    <Marker 
-      position={[event.lat, event.lng]} 
+    <Marker
+      position={[event.lat, event.lng]}
       icon={createPulseIcon(color)}
       eventHandlers={{ click: () => handleMarkerClick(event) }}
       ref={markerRef}
     >
       <Popup className="cyber-popup" closeButton={false}>
         <div className="font-mono text-sm p-1 text-gray-800">
-          <strong style={{color}}>Event ID:</strong> {event.id}<br/>
-          <strong style={{color}}>Category:</strong> {event.category}<br/>
-          <strong style={{color}}>Location:</strong> <ReverseGeocode lat={event.lat} lng={event.lng} /><br/>
-          <strong style={{color}}>Coordinates:</strong> [{event.lat}, {event.lng}]
+          <strong style={{ color }}>Event ID:</strong> {event.id}<br />
+          <strong style={{ color }}>Category:</strong> {event.category}<br />
+          <strong style={{ color }}>Location:</strong> <ReverseGeocode lat={event.lat} lng={event.lng} /><br />
+          <strong style={{ color }}>Coordinates:</strong> [{event.lat}, {event.lng}]
         </div>
       </Popup>
     </Marker>
@@ -96,13 +96,13 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
 
   const handleMarkerClick = (event) => {
     if (selectedEventId === event.id) {
-      // Deselect if already selected
+      // deselect on click
       setSelectedEventId(null);
       if (mapInstance) {
         mapInstance.flyTo(defaultCenter, defaultZoom, { animate: true, duration: 1.5 });
       }
     } else {
-      // Select and fly to the new node
+      // select and fly to node
       setSelectedEventId(event.id);
       if (setIsFollowing) setIsFollowing(false);
       if (mapInstance) {
@@ -111,10 +111,10 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
     }
   };
 
-  const visibleEvents = activeFilter === 'All' 
-    ? eventsList 
+  const visibleEvents = activeFilter === 'All'
+    ? eventsList
     : eventsList.filter(e => e.category === activeFilter);
-    
+
   const latestVisibleEvent = visibleEvents[visibleEvents.length - 1];
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
   }, [latestVisibleEvent]);
 
   const getCategoryColor = (category) => {
-    switch(category) {
+    switch (category) {
       case 'Wildfires': return '#ef4444'; // Red
       case 'Severe Storms': return '#06b6d4'; // Cyan
       case 'Volcanoes': return '#f59e0b'; // Amber
@@ -146,9 +146,9 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
 
   return (
     <div className="w-full h-full relative z-0">
-      <MapContainer 
-        center={defaultCenter} 
-        zoom={defaultZoom} 
+      <MapContainer
+        center={defaultCenter}
+        zoom={defaultZoom}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -158,23 +158,23 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
         />
         <MapEventCapture setMapInstance={setMapInstance} />
         <MapController center={position} isFollowing={isFollowing} />
-        
+
         {visibleEvents.map((event, idx) => {
           const color = getCategoryColor(event.category);
           const isSelected = event.id === selectedEventId;
           return (
             <React.Fragment key={`${event.id}-${idx}`}>
-              {/* Use HTML Marker for selected event to avoid Leaflet SVG transform bugs */}
+              {/* using html marker here to fix leaflet svg transform bugs */}
               {isSelected ? (
-                <SelectedMarker 
-                  event={event} 
-                  color={color} 
-                  createPulseIcon={createPulseIcon} 
-                  handleMarkerClick={handleMarkerClick} 
+                <SelectedMarker
+                  event={event}
+                  color={color}
+                  createPulseIcon={createPulseIcon}
+                  handleMarkerClick={handleMarkerClick}
                 />
               ) : (
-                <CircleMarker 
-                  center={[event.lat, event.lng]} 
+                <CircleMarker
+                  center={[event.lat, event.lng]}
                   radius={7}
                   pathOptions={{
                     color: color,
@@ -186,10 +186,10 @@ export default function MapView({ eventsList = [], activeFilter = 'All', isFollo
                 >
                   <Popup className="cyber-popup">
                     <div className="font-mono text-sm p-1 text-gray-800">
-                      <strong style={{color}}>Event ID:</strong> {event.id}<br/>
-                      <strong style={{color}}>Category:</strong> {event.category}<br/>
-                      <strong style={{color}}>Location:</strong> <ReverseGeocode lat={event.lat} lng={event.lng} /><br/>
-                      <strong style={{color}}>Coordinates:</strong> [{event.lat}, {event.lng}]
+                      <strong style={{ color }}>Event ID:</strong> {event.id}<br />
+                      <strong style={{ color }}>Category:</strong> {event.category}<br />
+                      <strong style={{ color }}>Location:</strong> <ReverseGeocode lat={event.lat} lng={event.lng} /><br />
+                      <strong style={{ color }}>Coordinates:</strong> [{event.lat}, {event.lng}]
                     </div>
                   </Popup>
                 </CircleMarker>

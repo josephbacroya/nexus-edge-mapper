@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [packetsIngested, setPacketsIngested] = useState(0);
   const [alertEvent, setAlertEvent] = useState(null);
 
-  // Track known IDs using a ref to prevent terminal spam/re-render loops
+  // keep track of known ids to avoid terminal spam and rerenders
   const knownEventIdsRef = useRef(new Set());
   const lastAlertTime = useRef(0);
 
@@ -45,10 +45,10 @@ export default function Dashboard() {
           let brandNewPacketsCount = 0;
           let newestMatch = null;
 
-          // Iterate backward (oldest to newest) to print logs chronologically
+          // iterate backwards to print logs chronologically
           for (let i = data.events.length - 1; i >= 0; i--) {
             const ev = data.events[i];
-            // Create a unique footprint matching your Redis cache keys
+            // match redis cache keys footprint
             const uniqueKey = `${ev.id}-${ev.timestamp}`;
 
             if (!knownEventIdsRef.current.has(uniqueKey)) {
@@ -58,7 +58,7 @@ export default function Dashboard() {
             }
           }
 
-          // Only update logs and counters if fresh packets actually landed
+          // update logs if we got new packets
           if (brandNewPacketsCount > 0 && newestMatch) {
             setPacketsIngested(p => p + brandNewPacketsCount);
             addLog(`[EDGE] Ingested ${brandNewPacketsCount} new binary telemetry packets.`);
@@ -72,18 +72,18 @@ export default function Dashboard() {
             }
           }
 
-          // Smoothly overlay the cluster arrays
+          // update events list
           setEventsList(data.events);
         }
       } catch (error) {
-        // Silent catch for polling resilience
+        // ignore polling errors
       }
     };
 
     fetchTelemetryStream();
     const intervalId = setInterval(fetchTelemetryStream, 2500);
     return () => clearInterval(intervalId);
-  }, []); // Drop eventsList dependency to kill the infinite re-polling triggers!
+  }, []); // no eventsList dependency to avoid infinite repolling
 
   const latestEvent = eventsList[0] || null;
 

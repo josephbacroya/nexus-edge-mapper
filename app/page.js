@@ -16,12 +16,12 @@ export default function LandingPage() {
 
   return (
     <main className="h-screen w-screen bg-[#0a0a0c] text-gray-200 font-sans relative overflow-hidden flex items-center justify-center p-6 lg:p-12">
-      {/* Animated Telemetry Background */}
+      {/* animated bg */}
       <AbstractBackground />
-      {/* Content inside Floating Glass Panel */}
+      {/* main content */}
       <div className="z-10 w-full max-w-6xl bg-[#0a0a0c]/60 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 md:p-16 flex flex-col items-center text-center space-y-16 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-y-auto max-h-full">
         
-        {/* Header */}
+        {/* header */}
         <div className="space-y-6">
           <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-4 shadow-xl">
             <span className="w-2 h-2 rounded-full bg-accent-mint animate-pulse"></span>
@@ -36,7 +36,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Feature Grid */}
+        {/* features grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
           <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 hover:border-accent-mint/50 transition-all flex flex-col items-center text-center group">
             <div className="p-4 rounded-xl bg-accent-retro/10 mb-6 group-hover:scale-110 transition-transform">
@@ -63,7 +63,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Action Area */}
+        {/* action area */}
         <div className="pt-8 h-24 flex flex-col items-center justify-center">
           {bootSequence < 3 ? (
             <div className="flex flex-col items-center space-y-4 text-accent-mint">
