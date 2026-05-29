@@ -48,7 +48,7 @@ def fetch_events(categories="wildfires,severeStorms,volcanoes,earthquakes", days
         print(f"[ERROR] Failed to fetch from EONET: {e}")
         return []
 
-# 2. This runs your original loop continuously in a background thread
+# 2. This runs your loop continuously in a background thread
 def telemetry_stream_worker():
     print("[SYS] Background telemetry worker ignited.")
     while True:
